@@ -1,0 +1,24 @@
+x-pg: &pg
+  image: postgres:16-alpine
+  environment:
+    POSTGRES_USER: lab
+    POSTGRES_PASSWORD: lab
+    POSTGRES_DB: lab
+  volumes:
+    - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+services:
+  shard0: { <<: *pg, container_name: shard0, ports: ["5440:5432"] }
+  shard1: { <<: *pg, container_name: shard1, ports: ["5441:5432"] }
+  shard2: { <<: *pg, container_name: shard2, ports: ["5442:5432"] }
+  shard3: { <<: *pg, container_name: shard3, ports: ["5443:5432"] }
+  shard4:
+    <<: *pg
+    container_name: shard4
+    ports: ["5444:5432"]
+    profiles: ["grow"]
+  directory:
+    image: postgres:16-alpine
+    container_name: directory
+    environment: { POSTGRES_USER: lab, POSTGRES_PASSWORD: lab, POSTGRES_DB: lab }
+    ports: ["5449:5432"]
